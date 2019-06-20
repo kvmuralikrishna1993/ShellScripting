@@ -1,0 +1,4 @@
+#output:
+#nothing comes(but generates a file ==> file.txt with content -> my name is krishna)
+#intially a file is created with the text my name is murali
+#next the file.txt is overwritten with next text --> my name is krishna

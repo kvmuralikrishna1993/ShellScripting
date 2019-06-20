@@ -1,0 +1,42 @@
+
+Preparing Your Data for Topic Modeling
+Posted on November 16, 2017 by Matt Pitchford	
+
+In keeping with my series of blog posts on my research project, this post is about how to prepare your data for input into a topic modeling package. I used Twitter data in my project, which is relatively sparse at only 140 characters per tweet, but the principles can be applied to any document or set of documents that you want to analyze.
+Topic Models:
+
+Topic models work by identifying and grouping words that co-occur into “topics.” As David Blei writes, Latent Dirichlet allocation (LDA) topic modeling makes two fundamental assumptions: “(1) There are a fixed number of patterns of word use, groups of terms that tend to occur together in documents. Call them topics. (2) Each document in the corpus exhibits the topics to varying degree. For example, suppose two of the topics are politics and film. LDA will represent a book like James E. Combs and Sara T. Combs’ Film Propaganda and American Politics: An Analysis and Filmography as partly about politics and partly about film.”
+
+Topic models do not have any actual semantic knowledge of the words, and so do not “read” the sentence. Instead, topic models use math. The tokens/words that tend to co-occur are statistically likely to be related to one another. However, that also means that the model is susceptible to “noise,” or falsely identifying patterns of cooccurrence if non-important but highly-repeated terms are used. As with most computational methods, “garbage in, garbage out.”
+
+In order to make sure that the topic model is identifying interesting or important patterns instead of noise, I had to accomplish the following pre-processing or “cleaning” steps.
+
+    First, I removed the punctuation marks, like “,.;:?!”. Without this step, commas started showing up in all of my results. Since they didn’t add to the meaning of the text, they were not necessary to analyze.
+    Second, I removed the stop-words, like “I,” “and,” and “the,” because those words are so common in any English sentence that they tend to be over-represented in the results. Many of my tweets were emotional responses, so many authors wrote in the first person. This tended to skew my results, although you should be careful about what stop words you remove. Simply removing stop-words without checking them first means that you can accidentally filter out important data.
+    Finally, I removed too common words that were uniquely present in my data. For example, many of my tweets were retweets and therefore contained the word “rt.” I also ended up removing mentions to other authors because highly retweeted texts tended to mean that I was getting Twitter user handles as significant words in my results.
+
+Cleaning the Data:
+
+My original data set was 10 Excel files of 10,000 tweets each. In order to clean and standardize all these data points, as well as combining my file into one single document, I used OpenRefine. OpenRefine is a powerful tool, and it makes it easy to work with all your data at once, even if it is a large number of entries. I uploaded all of my datasets, then performed some quick cleaning available under the “Common Transformations” option under the triangle dropdown at the head of each column: I changed everything to lowercase, unescaped HTML characters (to make sure that I didn’t get errors when trying to run it in Python), and removed extra white spaces between words.
+
+OpenRefine also lets you use regular expressions, which is a kind of search tool for finding specific strings of characters inside other text. This allowed me to remove punctuation, hashtags, and author mentions by running a find and replace command.
+
+    Remove punctuation: grel:value.replace(/(\p{P}(?<!’)(?<!-))/, “”)
+        Any punctuation character is removed.
+    Remove users: grel:value.replace(/(@\S*)/, “”)
+        Any string that begins with an @ is removed. It ends at the space following the word.
+    Remove hashtags: grel:value.replace(/(#\S*)/,””)
+        Any string that begins with a # is removed. It ends at the space following the word.
+
+Regular expressions, commonly abbreviated as “regex,” can take a little getting used to in order to understand how they work. Fortunately, OpenRefine itself has some solid documentation on the subject, and I also found this cheatsheet valuable as I was trying to get it work. If you want to create your own regex search strings, regex101.com has a tool that lets you test your expression before you actually deploy it in OpenRefine.
+
+After downloading the entire data set as a Comma Separated Value (.csv) file, I then used the Natural Language ToolKit (NLTK) for Python to remove stop-words. The code itself can be found here, but I first saved the content of the tweets as a single text file, and then I told NLTK to go over every line of the document and remove words that are in its common stop word dictionary. The output is then saved in another text file, which is ready to be fed into a topic modeling package, such as MALLET.
+
+At the end of all these cleaning steps, my resulting data is essentially composed of unique nouns and verbs, so, for example, @Phoenix_Rises13’s tweet “rt @drlawyercop since sensible, national gun control is a steep climb, how about we just start with orlando? #guncontrolnow” becomes instead “since sensible national gun control steep climb start orlando.” This means that the topic modeling will be more focused on the particular words present in each tweet, rather than commonalities of the English language.
+
+Now my data is cleaned from any additional noise, and it is ready to be input into a topic modeling program.
+
+Interested in working with topic models? There are two Savvy Researcher topic modeling workshops, on December 6 and December 8, that focus on the theory and practice of using topic models to answer questions in the humanities. I hope to see you there!
+
+Reference: https://publish.illinois.edu/commonsknowledge/2017/11/16/preparing-your-data-for-topic-modeling/
+
